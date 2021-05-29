@@ -1,0 +1,13 @@
+#You're gonna wanna make it think that your executable doesnt exist, otherwise,
+#because the executable exists, make will assume its the most recent build.
+.PHONY: debug 
+
+#using g++ and the flags inline like this, is generally seen as bad practice, it might be worth
+#looking into using Makefiles to make this more acceptable, but this will get you started.
+debug:
+	g++ -g -o debug main.cpp -std=c++17
+
+clean:
+	rm debug
+#if you copy this exactly, make you you replace the spaces with proper tab
+#characters otherwise it will error out.
