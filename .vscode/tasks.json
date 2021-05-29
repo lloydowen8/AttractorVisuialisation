@@ -47,7 +47,7 @@
             "command": "g++",
             "args": [
                 "-Og",
-                "${file}",
+                "*.cpp",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-lsfml-graphics",

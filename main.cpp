@@ -4,11 +4,12 @@
 #include <functional>
 #include "choasAttractor.h"
 #include "LorenzAttractor.h"
+#include "AizawaAttractor.h"
 
 int main(){ 
     std::string name = "Test";
 
-    std::vector<float> params = {10.f, 30.f, 8/3.f};
+    std::vector<float> params = {0.95, 0.7, 0.6, 3.5, 0.25, 0.1};
     step equations[3] = 
     {
         [](float point[], std::vector<float> param)->float{ return ((point[2] - param[1]) * point[0] - param[3] * point[1]);},
@@ -18,9 +19,11 @@ int main(){
 
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
-    sf::RenderWindow window(sf::VideoMode(600, 600), "Choas", sf::Style::Default, settings);
+    sf::RenderWindow window(sf::VideoMode(600, 900), "Choas", sf::Style::Default, settings);
    // window.setFramerateLimit(400);
 
-    LorenzAttractor choas(window, name, params, 10000, 3);
+    AizawaAttractor choas(window, name, params, 50000, 3);
+    choas.setScale(200);
+    choas.setTimeStep(0.006);
     choas.run();
 }

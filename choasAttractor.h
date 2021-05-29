@@ -39,9 +39,9 @@ class choasAttractor{
 
         for(int i = 0; i < numPoints; i++){ 
 
-            points[i][0] = (double)rand()/RAND_MAX;;
-            points[i][1] = 0.5;
-            points[i][2] = 0.5;
+            points[i][0] = (double)rand()/RAND_MAX;
+            points[i][1] = 0;
+            points[i][2] = 0;
 
             sf::Vertex circle;
             circle.color = sf::Color(51, 255, 255, 30);
@@ -80,9 +80,9 @@ class choasAttractor{
 		cam_angle[0] -= 0.003f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-		scale += 0.009f;
+		scale += 0.09f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-		scale -= 0.009f;
+		scale -= 0.09f;
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 		offsetY += 0.3f;
@@ -133,7 +133,7 @@ class choasAttractor{
             for(int j = 0; j < coordSize; j++){ 
                 points[i][j] += point[j];
             }
-            circles[i].position.x = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[0] * scale + window.getSize().x/2 + offsetX;
+            circles[i].position.x = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[1] * scale + window.getSize().x/2 + offsetX;
             circles[i].position.y = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[2] * scale + window.getSize().y/2 + offsetY;
 
         }
@@ -156,7 +156,7 @@ class choasAttractor{
         fullscreen_rect.setSize(sf::Vector2f(window.getSize().x, window.getSize().y));
 
         static const float fade_speeds[] = { 10,2,0,255 };
-        const sf::Uint8 fade_speed = fade_speeds[3];
+        const sf::Uint8 fade_speed = fade_speeds[1];
         if (fade_speed >= 1) {
             fullscreen_rect.setFillColor(sf::Color(fade_speed, fade_speed, fade_speed, 0));
             window.draw(fullscreen_rect, renderBlur);
