@@ -10,21 +10,28 @@
 typedef auto (*step)(float[], std::vector<float>) -> float;
 class choasAttractor{
     protected: 
-        int numPoints; 
-        int numCoords; 
-        std::string name;
-        sf::Event event;
-        std::vector<float> params;
         float **points;
         sf::Vertex * circles;
-        step *equations;
-        double timestep;
         float pointSize = 3.f;
+        int numPoints; 
+        int numCoords; 
+
+        std::string name;
+        sf::Event event;
+
+        step *equations;
+        std::vector<float> params;
+        double timestep = 0.001;
+
         sf::RenderWindow &window;
+
         Matrix3<float> rotMatrixX;
         Matrix3<float> rotMatrixY;
         Matrix3<float> rotMatrixZ;
         float cam_angle[3] = {0,0,0};
+        float scale = 10;
+        float offsetX = 0;
+        float offsetY = 0;
     protected:
 
     //Default point initiliser
@@ -72,7 +79,23 @@ class choasAttractor{
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 		cam_angle[0] -= 0.003f;
 
-	/// Compute Rotation Matrixes
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+		scale += 0.009f;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
+		scale -= 0.009f;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		offsetY += 0.3f;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		offsetY -= 0.3f;
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		offsetX += 0.3f;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		offsetX -= 0.3f;
+
+
+	/// Recompute Rotation Matrixes
 
 	rotMatrixX = 
 	{
@@ -95,9 +118,8 @@ class choasAttractor{
 
     };
 
-    //Default draw
+    //Calculate new positions and draw to window
     void draw(){ 
-        timestep = 0.0005;
         int pointSize = this->numPoints;
         int coordSize = this->numCoords;
 
@@ -111,8 +133,8 @@ class choasAttractor{
             for(int j = 0; j < coordSize; j++){ 
                 points[i][j] += point[j];
             }
-            circles[i].position.x = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[0] * 10 + 450;
-            circles[i].position.y = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[2] * 10 + 350;
+            circles[i].position.x = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[0] * scale + window.getSize().x/2 + offsetX;
+            circles[i].position.y = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[2] * scale + window.getSize().y/2 + offsetY;
 
         }
         free(point);
@@ -124,6 +146,7 @@ class choasAttractor{
         return equations[j](points[i], params);
     }
     
+    //Adds motion blur for tail affect
     void trail(){ 
         sf::BlendMode fade(sf::BlendMode::One, sf::BlendMode::One, sf::BlendMode::ReverseSubtract);
         sf::RenderStates renderBlur(fade);
@@ -175,17 +198,43 @@ class choasAttractor{
         };
 
         choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords): window(window){
+            
+            //Set values 
             this->name = name;
             this->params = param;
             this->numCoords = numCoords;
             this->numPoints = numPoints;
+
+            //Asign memory to arrays
             this->points = (float **)malloc(sizeof(float *) * numPoints);
             this->circles = (sf::Vertex *) malloc(sizeof(sf::Vertex) * numPoints);
             for (int i=0; i < numPoints; i++)
                 this->points[i] = (float *)malloc(numCoords * sizeof(float));
+
             initPoints(numPoints, numCoords);
+
             glEnable(GL_POINT_SMOOTH);
             glPointSize(pointSize);
+
+            //Initialise rotation matrices
+            rotMatrixX = 
+            {
+                {1, 0, 0},
+                {0, cos(cam_angle[0]), sin(cam_angle[0])},
+                {0, -sin(cam_angle[0]), cos(cam_angle[0])}
+            };
+            rotMatrixY = 
+            {
+                {cos(cam_angle[1]), 0, -sin(cam_angle[1])},
+                {0, 1, 0},
+                {sin(cam_angle[1]), 0, cos(cam_angle[1])}
+            };
+            rotMatrixZ =
+            {
+                {cos(cam_angle[2]), sin(cam_angle[2]), 0},
+                {-sin(cam_angle[2]), cos(cam_angle[2]), 0},
+                {0, 0, 1}
+            };
         };
 
         //Run the main loop
@@ -217,5 +266,8 @@ class choasAttractor{
         void setTimeStep(float step){ 
             timestep = step;
         }
-
+        
+        void setScale(float scale){ 
+            this->scale = scale;
+        }
 };

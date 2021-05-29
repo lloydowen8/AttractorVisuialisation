@@ -19,8 +19,8 @@ int main(){
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
     sf::RenderWindow window(sf::VideoMode(600, 600), "Choas", sf::Style::Default, settings);
-    window.setFramerateLimit(400);
+   // window.setFramerateLimit(400);
 
-    LorenzAttractor choas(window, name, params, 10000, 3, equations);
+    LorenzAttractor choas(window, name, params, 10000, 3);
     choas.run();
 }
