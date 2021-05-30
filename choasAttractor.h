@@ -65,58 +65,58 @@ class choasAttractor{
             }
         }
 
-
-	/// Update Camera Angle
-
-	// Look Left and Right
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		cam_angle[2] -= 0.003f;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		cam_angle[2] += 0.003f;
+        // Look Left and Right
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+            cam_angle[2] -= 0.003f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+            cam_angle[2] += 0.003f;
 
 
-	// Look Up and Down 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		cam_angle[1] += 0.003f;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		cam_angle[1] -= 0.003f;
+        // Look Up and Down 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+            cam_angle[1] += 0.003f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+            cam_angle[1] -= 0.003f;
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-		scale += 0.9f;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-		scale -= 0.9f;
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		offsetY += 1.8f;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		offsetY -= 1.8f;
-    
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-		offsetX += 1.8f;
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-		offsetX -= 1.8f;
+        //Zoom in and out
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
+            scale += 0.9f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
+            scale -= 0.9f;
+        
+        //Move left and right
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+            offsetY += 1.8f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+            offsetY -= 1.8f;
+        
+        //Move up and down 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+            offsetX += 1.8f;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+            offsetX -= 1.8f;
 
 
-	/// Recompute Rotation Matrixes
+        /// Recompute Rotation Matrixes
 
-	rotMatrixX = 
-	{
-		{1, 0, 0},
-		{0, cos(cam_angle[0]), sin(cam_angle[0])},
-		{0, -sin(cam_angle[0]), cos(cam_angle[0])}
-	};
-	rotMatrixY = 
-	{
-		{cos(cam_angle[1]), 0, -sin(cam_angle[1])},
-		{0, 1, 0},
-		{sin(cam_angle[1]), 0, cos(cam_angle[1])}
-	};
-	rotMatrixZ =
-	{
-		{cos(cam_angle[2]), sin(cam_angle[2]), 0},
-		{-sin(cam_angle[2]), cos(cam_angle[2]), 0},
-		{0, 0, 1}
-	};
+        rotMatrixX = 
+        {
+            {1, 0, 0},
+            {0, cos(cam_angle[0]), sin(cam_angle[0])},
+            {0, -sin(cam_angle[0]), cos(cam_angle[0])}
+        };
+        rotMatrixY = 
+        {
+            {cos(cam_angle[1]), 0, -sin(cam_angle[1])},
+            {0, 1, 0},
+            {sin(cam_angle[1]), 0, cos(cam_angle[1])}
+        };
+        rotMatrixZ =
+        {
+            {cos(cam_angle[2]), sin(cam_angle[2]), 0},
+            {-sin(cam_angle[2]), cos(cam_angle[2]), 0},
+            {0, 0, 1}
+        };
 
     };
 
@@ -124,32 +124,34 @@ class choasAttractor{
     void draw(){ 
         int pointSize = this->numPoints;
         int coordSize = this->numCoords;
-        glPointSize(this->pointSize);
         float *point = (float *) malloc(sizeof(float) * coordSize);
         for(int i = 0; i < pointSize; i++){ 
             
+            //Calculate steps for each dimention
             for(int j = 0; j < coordSize; j++){ 
                 point[j] = calcStep(i, j) * timestep;
             }
             
+            //Apply step to point
             for(int j = 0; j < coordSize; j++){ 
                 points[i][j] += point[j];
             }
+
+            //Project point from 3D space to 2D
             float * projected;
             memcpy ( &projected, &points[i], sizeof(points[i]) );
             projected = (rotMatrixX * (rotMatrixY * (rotMatrixZ * projected)));
+
             float scale_projected = perspective / (perspective + projected[0]);
             circles[i].position.x = projected[1] * scale_projected * scale + window.getSize().x/2 + offsetX;
             circles[i].position.y = projected[2] * scale_projected * scale + window.getSize().y/2 + offsetY;
-            float depth = (float)(projected[0] * scale / 500);
-            //circles[i].color = sf::Color(255 * depth, 255 * depth, 255 * depth, 60);
-            //if(i == 700)printf("%f\n", (1 + depth));
-            //glPointSize(this->pointSize * (1 - depth));
-            window.draw(&circles[i], 1, sf::PrimitiveType::Points);
+
+            circles[i].color = sf::Color(200, 200, 200, 30 * abs(projected[0]/10));
+            if (i == 0) printf("%f", 60 * abs(points[i][0]/10));
         }
+
         free(point);
-
-
+        window.draw(circles, numPoints, sf::PrimitiveType::Points);
     };
 
     //Overidable function for child classes
@@ -175,46 +177,14 @@ class choasAttractor{
     }
 
     public:
-        choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords, step equations[]): window(window){
-            this->name = name;
-            this->params = param;
-            this->numCoords = numCoords;
-            this->numPoints = numPoints;
-            this->points = (float **)malloc(sizeof(float *) * numPoints);
-            this->circles = (sf::Vertex *) malloc(sizeof(sf::Vertex) * numPoints);
-            for (int i=0; i < numPoints; i++)
-                this->points[i] = (float *)malloc(numCoords * sizeof(float));
-            initPoints(numPoints, numCoords);
-            this->equations = equations;
-            glEnable(GL_POINT_SMOOTH);
-            glPointSize(pointSize);
-            rotMatrixX = 
-            {
-                {1, 0, 0},
-                {0, cos(cam_angle[0]), sin(cam_angle[0])},
-                {0, -sin(cam_angle[0]), cos(cam_angle[0])}
-            };
-            rotMatrixY = 
-            {
-                {cos(cam_angle[1]), 0, -sin(cam_angle[1])},
-                {0, 1, 0},
-                {sin(cam_angle[1]), 0, cos(cam_angle[1])}
-            };
-            rotMatrixZ =
-            {
-                {cos(cam_angle[2]), sin(cam_angle[2]), 0},
-                {-sin(cam_angle[2]), cos(cam_angle[2]), 0},
-                {0, 0, 1}
-            };
-        };
-
-        choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords): window(window){
-            
+        choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords, step equations[] = {}): window(window){
             //Set values 
             this->name = name;
             this->params = param;
             this->numCoords = numCoords;
             this->numPoints = numPoints;
+            this->equations = equations;
+            this->perspective = window.getSize().y * 0.8;
 
             //Asign memory to arrays
             this->points = (float **)malloc(sizeof(float *) * numPoints);
@@ -246,7 +216,6 @@ class choasAttractor{
                 {0, 0, 1}
             };
 
-            perspective = window.getSize().y * 0.8;
         };
 
         //Run the main loop
@@ -257,9 +226,11 @@ class choasAttractor{
             sf::Time currentTime;
             while (window.isOpen())
             {
+
+                //Calculate the FPS
                 currentTime = clock.getElapsedTime();
-                fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); // the asSeconds returns a float
-                //std::cout << "fps =" << floor(fps) << std::endl; // flooring it will make the frame rate a rounded number
+                fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); 
+                std::cout << "fps =" << floor(fps) << std::endl; 
                 previousTime = currentTime;
 
                 this->input();
@@ -272,7 +243,7 @@ class choasAttractor{
         };
 
         void setPointSize(float size){ 
-            this->pointSize = size;
+            glPointSize(size);
         }
 
         void setTimeStep(float step){ 
