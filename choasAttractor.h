@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/OpenGL.hpp>
 #include <functional>
+#include <cstring>
 #include <iostream>
 #include "matrix3.h"
 
@@ -21,7 +22,7 @@ class choasAttractor{
 
         step *equations;
         std::vector<float> params;
-        double timestep = 0.001;
+        double timestep = 0.0005;
 
         sf::RenderWindow &window;
 
@@ -32,6 +33,7 @@ class choasAttractor{
         float scale = 10;
         float offsetX = 0;
         float offsetY = 0;
+        float perspective;
     protected:
 
     //Default point initiliser
@@ -39,12 +41,12 @@ class choasAttractor{
 
         for(int i = 0; i < numPoints; i++){ 
 
-            points[i][0] = (double)rand()/RAND_MAX;
-            points[i][1] = 0;
-            points[i][2] = 0;
+            points[i][0] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
+            points[i][1] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
+            points[i][2] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
 
             sf::Vertex circle;
-            circle.color = sf::Color(51, 255, 255, 30);
+            circle.color = sf::Color(255, 255, 255, 60);
             circles[i] = circle;
 
         }
@@ -68,31 +70,31 @@ class choasAttractor{
 
 	// Look Left and Right
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-		cam_angle[1] -= 0.003f;
+		cam_angle[2] -= 0.003f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-		cam_angle[1] += 0.003f;
+		cam_angle[2] += 0.003f;
 
 
 	// Look Up and Down 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-		cam_angle[0] += 0.003f;
+		cam_angle[1] += 0.003f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-		cam_angle[0] -= 0.003f;
+		cam_angle[1] -= 0.003f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
-		scale += 0.09f;
+		scale += 0.9f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
-		scale -= 0.09f;
+		scale -= 0.9f;
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		offsetY += 0.3f;
+		offsetY += 1.8f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		offsetY -= 0.3f;
+		offsetY -= 1.8f;
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-		offsetX += 0.3f;
+		offsetX += 1.8f;
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-		offsetX -= 0.3f;
+		offsetX -= 1.8f;
 
 
 	/// Recompute Rotation Matrixes
@@ -122,7 +124,7 @@ class choasAttractor{
     void draw(){ 
         int pointSize = this->numPoints;
         int coordSize = this->numCoords;
-
+        glPointSize(this->pointSize);
         float *point = (float *) malloc(sizeof(float) * coordSize);
         for(int i = 0; i < pointSize; i++){ 
             
@@ -133,12 +135,21 @@ class choasAttractor{
             for(int j = 0; j < coordSize; j++){ 
                 points[i][j] += point[j];
             }
-            circles[i].position.x = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[1] * scale + window.getSize().x/2 + offsetX;
-            circles[i].position.y = (rotMatrixX * (rotMatrixY * (rotMatrixZ * points[i])))[2] * scale + window.getSize().y/2 + offsetY;
-
+            float * projected;
+            memcpy ( &projected, &points[i], sizeof(points[i]) );
+            projected = (rotMatrixX * (rotMatrixY * (rotMatrixZ * projected)));
+            float scale_projected = perspective / (perspective + projected[0]);
+            circles[i].position.x = projected[1] * scale_projected * scale + window.getSize().x/2 + offsetX;
+            circles[i].position.y = projected[2] * scale_projected * scale + window.getSize().y/2 + offsetY;
+            float depth = (float)(projected[0] * scale / 500);
+            //circles[i].color = sf::Color(255 * depth, 255 * depth, 255 * depth, 60);
+            //if(i == 700)printf("%f\n", (1 + depth));
+            //glPointSize(this->pointSize * (1 - depth));
+            window.draw(&circles[i], 1, sf::PrimitiveType::Points);
         }
         free(point);
-        window.draw(circles, numPoints, sf::PrimitiveType::Points);
+
+
     };
 
     //Overidable function for child classes
@@ -156,7 +167,7 @@ class choasAttractor{
         fullscreen_rect.setSize(sf::Vector2f(window.getSize().x, window.getSize().y));
 
         static const float fade_speeds[] = { 10,2,0,255 };
-        const sf::Uint8 fade_speed = fade_speeds[1];
+        const sf::Uint8 fade_speed = fade_speeds[3];
         if (fade_speed >= 1) {
             fullscreen_rect.setFillColor(sf::Color(fade_speed, fade_speed, fade_speed, 0));
             window.draw(fullscreen_rect, renderBlur);
@@ -214,7 +225,6 @@ class choasAttractor{
             initPoints(numPoints, numCoords);
 
             glEnable(GL_POINT_SMOOTH);
-            glPointSize(pointSize);
 
             //Initialise rotation matrices
             rotMatrixX = 
@@ -235,6 +245,8 @@ class choasAttractor{
                 {-sin(cam_angle[2]), cos(cam_angle[2]), 0},
                 {0, 0, 1}
             };
+
+            perspective = window.getSize().y * 0.8;
         };
 
         //Run the main loop
@@ -247,7 +259,7 @@ class choasAttractor{
             {
                 currentTime = clock.getElapsedTime();
                 fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); // the asSeconds returns a float
-                std::cout << "fps =" << floor(fps) << std::endl; // flooring it will make the frame rate a rounded number
+                //std::cout << "fps =" << floor(fps) << std::endl; // flooring it will make the frame rate a rounded number
                 previousTime = currentTime;
 
                 this->input();
@@ -260,7 +272,7 @@ class choasAttractor{
         };
 
         void setPointSize(float size){ 
-            glPointSize(size);
+            this->pointSize = size;
         }
 
         void setTimeStep(float step){ 

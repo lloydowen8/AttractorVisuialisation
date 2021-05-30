@@ -20,10 +20,11 @@ int main(){
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
     sf::RenderWindow window(sf::VideoMode(600, 900), "Choas", sf::Style::Default, settings);
-   // window.setFramerateLimit(400);
+    //window.setFramerateLimit(60);
 
-    AizawaAttractor choas(window, name, params, 50000, 3);
+    AizawaAttractor choas(window, name, params, 20000, 3);
     choas.setScale(200);
-    choas.setTimeStep(0.006);
+    choas.setPointSize(3);
+    choas.setTimeStep(0.003);
     choas.run();
 }
