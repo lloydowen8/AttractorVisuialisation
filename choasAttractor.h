@@ -262,6 +262,7 @@ class choasAttractor{
                 } else if(duration > 9){
                     fade = 1 - duration + 9;
                 }
+                cam_angle[2] += 0.003f;
                 currentTime = clock.getElapsedTime();
                 fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); 
                 std::cout << "fps =" << floor(fps) << std::endl; 
