@@ -6,6 +6,9 @@
 #include <functional>
 #include <cstring>
 #include <iostream>
+#include <sstream>
+#include <cassert>
+#include <fstream>
 #include "matrix3.h"
 
 typedef auto (*step)(float[], std::vector<float>) -> float;
@@ -34,6 +37,11 @@ class choasAttractor{
         float offsetX = 0;
         float offsetY = 0;
         float perspective;
+        float fade = 1;
+
+        sf::Text equ_text;
+        sf::RectangleShape equ_box;
+        sf::Font font;
     protected:
 
     //Default point initiliser
@@ -46,13 +54,21 @@ class choasAttractor{
             points[i][2] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
 
             sf::Vertex circle;
-            circle.color = sf::Color(255, 255, 255, 60);
+            circle.color = sf::Color(200, 200, 200, 60);
             circles[i] = circle;
 
         }
 
     };
 
+    static sf::RectangleShape MakeBoundsShape(const sf::Text& text) {
+        sf::RectangleShape blackBox;
+        const sf::FloatRect textBounds = text.getGlobalBounds();
+        blackBox.setPosition(textBounds.left, textBounds.top);
+        blackBox.setSize(sf::Vector2f(textBounds.width, textBounds.height));
+        blackBox.setFillColor(sf::Color::Black);
+        return blackBox;
+    }
 
     //Handle user input
     void input(){ 
@@ -125,8 +141,7 @@ class choasAttractor{
         int pointSize = this->numPoints;
         int coordSize = this->numCoords;
         float *point = (float *) malloc(sizeof(float) * coordSize);
-        for(int i = 0; i < pointSize; i++){ 
-            
+        for(int i = 0; i < pointSize; i++){
             //Calculate steps for each dimention
             for(int j = 0; j < coordSize; j++){ 
                 point[j] = calcStep(i, j) * timestep;
@@ -146,8 +161,7 @@ class choasAttractor{
             circles[i].position.x = projected[1] * scale_projected * scale + window.getSize().x/2 + offsetX;
             circles[i].position.y = projected[2] * scale_projected * scale + window.getSize().y/2 + offsetY;
 
-            circles[i].color = sf::Color(200, 200, 200, 30 * abs(projected[0]/10));
-            if (i == 0) printf("%f", 60 * abs(points[i][0]/10));
+            circles[i].color.a = 60 * fade;
         }
 
         free(point);
@@ -177,7 +191,7 @@ class choasAttractor{
     }
 
     public:
-        choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords, step equations[] = {}): window(window){
+        choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords, float scale, step equations[] = {}): window(window){
             //Set values 
             this->name = name;
             this->params = param;
@@ -185,6 +199,20 @@ class choasAttractor{
             this->numPoints = numPoints;
             this->equations = equations;
             this->perspective = window.getSize().y * 0.8;
+            this->scale = scale;
+
+            if (!font.loadFromFile("FUTRFW.ttf")) {
+                std::cerr << "FATAL: Failed to load font." << std::endl;
+                system("pause");
+                exit(1);
+            }
+
+            equ_text.setCharacterSize(30);
+            equ_text.setFont(font);
+            equ_text.setString(name);
+            equ_text.setFillColor(sf::Color::White);
+            equ_text.setPosition(10.0f, 10.0f);
+            equ_box = MakeBoundsShape(equ_text);
 
             //Asign memory to arrays
             this->points = (float **)malloc(sizeof(float *) * numPoints);
@@ -224,10 +252,16 @@ class choasAttractor{
             sf::Clock clock = sf::Clock();
             sf::Time previousTime = clock.getElapsedTime();
             sf::Time currentTime;
-            while (window.isOpen())
+            float duration = 10;
+            while (window.isOpen() && duration > 0)
             {
-
+                duration -= timestep;
                 //Calculate the FPS
+                if(duration < 1){ 
+                    fade = duration;
+                } else if(duration > 9){
+                    fade = 1 - duration + 9;
+                }
                 currentTime = clock.getElapsedTime();
                 fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); 
                 std::cout << "fps =" << floor(fps) << std::endl; 
@@ -236,7 +270,11 @@ class choasAttractor{
                 this->input();
                 this->trail();
                 this->draw();
-
+                sf::Color equ_colour = equ_text.getColor();
+                equ_colour.a = 255*fade;
+                equ_text.setColor(equ_colour);
+                window.draw(equ_box);
+                window.draw(equ_text);
                 window.display();
 
             }

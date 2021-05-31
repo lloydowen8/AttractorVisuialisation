@@ -8,10 +8,10 @@
 #include <iostream>
 
 class AizawaAttractor : public choasAttractor{ 
-    private:
-        float offsetY = 0; 
+
     protected: 
     float calcStep(int i, int j) override{ 
+
         switch(j){ 
             default:
                 return static_cast<float>((points[i][2] - params[1]) * points[i][0] - params[3] * points[i][1]);
