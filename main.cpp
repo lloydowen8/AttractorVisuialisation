@@ -5,12 +5,14 @@
 #include "choasAttractor.h"
 #include "LorenzAttractor.h"
 #include "AizawaAttractor.h"
+#include "HalvorsenAttractor.h"
 
 int main(){ 
     std::vector<std::vector<float>> params = 
     {
         {0.95, 0.7, 0.6, 3.5, 0.25, 0.1},
-        {10, 30, 8/3}
+        {10, 30, 8/3}, 
+        {1.4}
     };
 
     step equations[3] = 
@@ -39,13 +41,14 @@ int main(){
     window.setFramerateLimit(60);
 
     std::vector<choasAttractor *> test; 
+    test.push_back(new HalvorsenAttractor(window, "Halvorsen Attractor", params[2], 50000, 3, 23));
     test.push_back(new AizawaAttractor(window, "Aizawa Attractor", params[0], 50000, 3, 200));
-    test.push_back(new LorenzAttractor(window, "Lorenz Attractor", params[1], 50000, 3, 15));
-
+    test.push_back(new LorenzAttractor(window, "Lorenz Attractor", params[1], 50000, 3, 12));
+    
 
     int i = 0;
     while(true){ 
-        i = i % 2;
+        i = i % test.size();
 
         test[i]->setPointSize(3);
         test[i]->setTimeStep(0.003);
