@@ -11,12 +11,12 @@
 #include <fstream>
 #include "matrix3.h"
 
-typedef auto (*step)(float[], std::vector<float>) -> float;
+typedef auto (*step)(double[], std::vector<float>) -> double;
 class choasAttractor{
     protected: 
-        float **points;
+        double **points;
         sf::Vertex * circles;
-        float pointSize = 3.f;
+        double pointSize = 3.f;
         int numPoints; 
         int numCoords; 
 
@@ -25,13 +25,13 @@ class choasAttractor{
 
         step *equations;
         std::vector<float> params;
-        double timestep = 0.0005;
+        float timestep = 0.0005;
 
         sf::RenderWindow &window;
 
-        Matrix3<float> rotMatrixX;
-        Matrix3<float> rotMatrixY;
-        Matrix3<float> rotMatrixZ;
+        Matrix3<double> rotMatrixX;
+        Matrix3<double> rotMatrixY;
+        Matrix3<double> rotMatrixZ;
         float cam_angle[3] = {0,0,0};
         float scale = 10;
         float offsetX = 0;
@@ -49,9 +49,9 @@ class choasAttractor{
 
         for(int i = 0; i < numPoints; i++){ 
 
-            points[i][0] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
-            points[i][1] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
-            points[i][2] = (double)(rand() - RAND_MAX/2)/(RAND_MAX/2);
+            points[i][0] = (double)(rand() - RAND_MAX/2)/(RAND_MAX);
+            points[i][1] = (double)(rand() - RAND_MAX/2)/(RAND_MAX);
+            points[i][2] = (double)(rand() - RAND_MAX/2)/(RAND_MAX);
 
             sf::Vertex circle;
             circle.color = sf::Color(200, 200, 200, 60);
@@ -140,7 +140,7 @@ class choasAttractor{
     void draw(){ 
         int pointSize = this->numPoints;
         int coordSize = this->numCoords;
-        float *point = (float *) malloc(sizeof(float) * coordSize);
+        double *point = (double *) malloc(sizeof(double) * coordSize);
         for(int i = 0; i < pointSize; i++){
             //Calculate steps for each dimention
             for(int j = 0; j < coordSize; j++){ 
@@ -153,11 +153,11 @@ class choasAttractor{
             }
 
             //Project point from 3D space to 2D
-            float * projected;
+            double * projected;
             memcpy ( &projected, &points[i], sizeof(points[i]) );
             projected = (rotMatrixX * (rotMatrixY * (rotMatrixZ * projected)));
 
-            float scale_projected = perspective / (perspective + projected[0]);
+            double scale_projected = perspective / (perspective + projected[0]);
             circles[i].position.x = projected[1] * scale_projected * scale + window.getSize().x/2 + offsetX;
             circles[i].position.y = projected[2] * scale_projected * scale + window.getSize().y/2 + offsetY;
 
@@ -169,7 +169,7 @@ class choasAttractor{
     };
 
     //Overidable function for child classes
-    virtual float calcStep(int i, int j){ 
+    virtual double calcStep(int i, int j){ 
         return equations[j](points[i], params);
     }
     
@@ -215,10 +215,10 @@ class choasAttractor{
             equ_box = MakeBoundsShape(equ_text);
 
             //Asign memory to arrays
-            this->points = (float **)malloc(sizeof(float *) * numPoints);
+            this->points = (double **)malloc(sizeof(double *) * numPoints);
             this->circles = (sf::Vertex *) malloc(sizeof(sf::Vertex) * numPoints);
             for (int i=0; i < numPoints; i++)
-                this->points[i] = (float *)malloc(numCoords * sizeof(float));
+                this->points[i] = (double *)malloc(numCoords * sizeof(double));
 
             initPoints(numPoints, numCoords);
 
@@ -256,21 +256,22 @@ class choasAttractor{
             while (window.isOpen() && duration > 0)
             {
                 duration -= timestep;
-                //Calculate the FPS
                 if(duration < 1){ 
                     fade = duration;
                 } else if(duration > 9){
                     fade = 1 - duration + 9;
                 }
                 cam_angle[2] += 0.003f;
+                //Calculate the FPS
                 currentTime = clock.getElapsedTime();
                 fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); 
-                std::cout << "fps =" << floor(fps) << std::endl; 
+                //std::cout << "fps =" << floor(fps) << std::endl; 
                 previousTime = currentTime;
 
                 this->input();
                 this->trail();
                 this->draw();
+                
                 sf::Color equ_colour = equ_text.getColor();
                 equ_colour.a = 255*fade;
                 equ_text.setColor(equ_colour);
