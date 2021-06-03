@@ -42,6 +42,7 @@ class choasAttractor{
         sf::Text equ_text;
         sf::RectangleShape equ_box;
         sf::Font font;
+        sf::Color colour;
     protected:
 
     //Default point initiliser
@@ -54,7 +55,7 @@ class choasAttractor{
             points[i][2] = (double)(rand() - RAND_MAX/2)/(RAND_MAX);
 
             sf::Vertex circle;
-            circle.color = sf::Color(200, 200, 200, 60);
+            circle.color = this->colour;
             circles[i] = circle;
 
         }
@@ -87,7 +88,6 @@ class choasAttractor{
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
             cam_angle[2] += 0.003f;
 
-
         // Look Up and Down 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
             cam_angle[1] += 0.003f;
@@ -112,9 +112,16 @@ class choasAttractor{
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             offsetX -= 1.8f;
 
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+            colour.r = (colour.r + 1) % 255;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
+            colour.g = (colour.r + 1) % 255;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
+            colour.b = (colour.r + 1) % 255;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+            colour = sf::Color(200, 200, 200, 60);
 
-        /// Recompute Rotation Matrixes
-
+        // Recompute Rotation Matrixes
         rotMatrixX = 
         {
             {1, 0, 0},
@@ -160,8 +167,10 @@ class choasAttractor{
             double scale_projected = perspective / (perspective + projected[0]);
             circles[i].position.x = projected[1] * scale_projected * scale + window.getSize().x/2 + offsetX;
             circles[i].position.y = projected[2] * scale_projected * scale + window.getSize().y/2 + offsetY;
-
+            circles[i].color = colour;
             circles[i].color.a = 60 * fade;
+
+            free(projected);
         }
 
         free(point);
@@ -190,6 +199,16 @@ class choasAttractor{
         }                        
     }
 
+    void text(){ 
+        sf::Color equ_colour = equ_text.getColor();
+        colour.a = 255;
+        equ_text.setColor(colour);
+        colour.a = 60;
+        window.draw(equ_box);
+        window.draw(equ_text);
+        window.display();
+    }
+
     public:
         choasAttractor(sf::RenderWindow &window, std::string name, std::vector<float> param, int numPoints, int numCoords, float scale, step equations[] = {}): window(window){
             //Set values 
@@ -200,6 +219,7 @@ class choasAttractor{
             this->equations = equations;
             this->perspective = window.getSize().y * 0.8;
             this->scale = scale;
+            this->colour = sf::Color(200, 200, 200, 60);
 
             if (!font.loadFromFile("FUTRFW.ttf")) {
                 std::cerr << "FATAL: Failed to load font." << std::endl;
@@ -256,12 +276,15 @@ class choasAttractor{
             while (window.isOpen() && duration > 0)
             {
                 duration -= timestep;
+
+                //fade out and in effect 
                 if(duration < 1){ 
                     fade = duration;
                 } else if(duration > 9){
                     fade = 1 - duration + 9;
                 }
                 cam_angle[2] += 0.003f;
+
                 //Calculate the FPS
                 currentTime = clock.getElapsedTime();
                 fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds()); 
@@ -271,13 +294,7 @@ class choasAttractor{
                 this->input();
                 this->trail();
                 this->draw();
-                
-                sf::Color equ_colour = equ_text.getColor();
-                equ_colour.a = 255*fade;
-                equ_text.setColor(equ_colour);
-                window.draw(equ_box);
-                window.draw(equ_text);
-                window.display();
+                this->text();
 
             }
         };
@@ -292,5 +309,10 @@ class choasAttractor{
         
         void setScale(float scale){ 
             this->scale = scale;
+        }
+
+        ~choasAttractor(){ 
+            free(points);
+            free(circles);
         }
 };

@@ -26,11 +26,11 @@ int main(){
     window.setFramerateLimit(60);
 
     std::vector<choasAttractor *> test; 
-    test.push_back(new HalvorsenAttractor(window, "Halvorsen Attractor", params[2], 50000, 3, 23));
-    test.push_back(new AizawaAttractor(window, "Aizawa Attractor", params[0], 50000, 3, 200));
-    test.push_back(new NewtonLeipnikAttractor(window, "Newton-Leipnik Attractor", params[4], 50000, 3, 300));
-    test.push_back(new Bouali3Attractor(window, "Bouali 3 System", params[3], 50000, 3, 100));
-    test.push_back(new LorenzAttractor(window, "Lorenz Attractor", params[1], 50000, 3, 12));
+    test.push_back(new HalvorsenAttractor(window, "Halvorsen Attractor", params[2], 50000, 3, 35));
+    test.push_back(new AizawaAttractor(window, "Aizawa Attractor", params[0], 50000, 3, 250));
+    test.push_back(new NewtonLeipnikAttractor(window, "Newton-Leipnik Attractor", params[4], 50000, 3, 350));
+    test.push_back(new Bouali3Attractor(window, "Bouali 3 System", params[3], 50000, 3, 140));
+    test.push_back(new LorenzAttractor(window, "Lorenz Attractor", params[1], 50000, 3, 18));
     
 
     int i = 0;
