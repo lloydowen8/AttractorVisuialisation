@@ -112,6 +112,7 @@ class choasAttractor{
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             offsetX -= 1.8f;
 
+        //Colour control
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
             colour.r = (colour.r + 1) % 255;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::G))
@@ -120,6 +121,15 @@ class choasAttractor{
             colour.b = (colour.r + 1) % 255;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
             colour = sf::Color(200, 200, 200, 60);
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+            timestep += 0.0001;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)){
+            timestep -= 0.0001;
+            if (timestep < 0){ 
+                timestep = 0;
+            }
+        }
 
         // Recompute Rotation Matrixes
         rotMatrixX = 
