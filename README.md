@@ -6,8 +6,8 @@ A visualisation of mathematical attractors using C++ &amp; SFML
 - SFML: Instructions on how to install SFML can be found <a src="https://www.sfml-dev.org/tutorials/2.5/start-vc.php">here</a>
 - MinGW (Windows)
 
-##Example Video
-<a src="https://www.youtube.com/watch?v=TB8PrRNOKAM"></a>
+## Example Video
+<a src="https://www.youtube.com/watch?v=TB8PrRNOKAM">https://www.youtube.com/watch?v=TB8PrRNOKAM</a>
 
 ## Controls 
 - WASD: Move the attractor up, left, down, right 
