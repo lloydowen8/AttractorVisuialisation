@@ -1,5 +1,10 @@
 # AttractorVisuialisation
 A visualisation of mathematical attractors using C++ &amp; SFML 
+
+This project was designed to be highly extendable with new attractors. The parent class (chaosAttractor) can be called with a series of lambda functions to represent any dynamic system. It has only been tested with sytems containing 3 dimentions (x,y,z). But can be extended to use more or less (untested) and is something I might look into doing in the future. 
+
+Implemeting new attractors as sub-classes is more computationally efficent than the lambda functions. Sub-classes should implement the "calcStep" function.
+
 <img src="./Screenshot.png">
 
 ## Dependecies
