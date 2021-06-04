@@ -16,7 +16,7 @@ A visualisation of mathematical attractors using C++ &amp; SFML
 - Z: zoom in
 - X: zoom out
 - LShift: speed up
-- LControl: spped down
+- LControl: speed down
 - R: Increase red colour
 - G: Increase green colour
 - B: increase blue colour
