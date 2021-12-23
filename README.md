@@ -7,7 +7,7 @@ Implemeting new attractors as sub-classes is more computationally efficent than 
 
 <img src="./Screenshot.png">
 
-## Dependecies
+## Dependencies
 - SFML: Instructions on how to install SFML can be found <a src="https://www.sfml-dev.org/tutorials/2.5/start-vc.php">here</a>
 - MinGW (Windows)
 
